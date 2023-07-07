@@ -1,6 +1,7 @@
 import simpy
 import numpy as np
-
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 class Client:
 	def __init__(self, env, resources, processing_rate):
@@ -42,6 +43,7 @@ class QueueSimulator:
 		self.processing_clients_amount = [0]
 		self.rejected_clients = 0
 		self.accepted_clients = 0
+		
 		self.processed_clients = []
 		self.clients_in_queue_samples = []
 		self.processing_clients_samples = []
@@ -86,9 +88,12 @@ class QueueSimulator:
 	def average_clients_in_queue(self):
 		return sum(self.clients_in_queue_samples) / len(self.clients_in_queue_samples)
 	
-	def average_clients_in_system(self):
-		return self.average_clients_in_queue() + sum(self.processing_clients_samples) / len(self.processing_clients_samples)
+	def average_processing_ocupation(self): #cantidad de procesadores ocupados == #cantidad de usuarios trabajando
+		return sum(self.processing_clients_samples) / len(self.processing_clients_samples)
 	
+	def average_clients_in_system(self):
+		return self.average_clients_in_queue() + self.average_processing_ocupation()
+
 	def average_time_in_queue(self):
 		aux = 0
 		for client in self.processed_clients:
@@ -105,15 +110,50 @@ class QueueSimulator:
 		return self.rejected_clients/ (self.accepted_clients + self.rejected_clients)
 
 
+	
+	def frec_ocupated_proccesor(self, x):
+		aux = 0
+		for p in self.processing_clients_samples:
+			if (p == x):
+				aux += 1
+		return aux/len(self.processing_clients_samples)
+		
+		#vect = [cantidad == x for cantidad in self.processing_clients_samples]
+		#return sum(vect)/len(vect)	
+
+	def samples_in_system(self):
+		return np.array(self.processing_clients_samples) + np.array(self.clients_in_queue_samples)
+
+	def plot_N_dist(self):
+		samples_in_system = self.samples_in_system()
+		frequencies = [0 for i in range(self.ammount_processors + self.queue_length + 1)]
+		for i in samples_in_system:
+			frequencies[i] += 1
+		
+		frequencies = [frecuency / len(samples_in_system) for frecuency in frequencies]
+		plt.bar(range(len(frequencies)), frequencies)
+
+		# Configurar etiquetas y título
+		plt.xlabel('Elementos')
+		plt.ylabel('Probabilidades')
+		plt.title('Probabilidades de los elementos')
+		plt.show()
+
 def main():
-	q = QueueSimulator(6, 1/3, 10, 10)
-	q.run(1e5)
+	q = QueueSimulator(1/10, 1/180, 10, 10)
+	print('alexa, play "musica de ascensor, 10 horas"')
+	q.run(1e5, 1e6)
 	print(f'rejected ratio: {q.rejected_ratio()}')
 	print(f'avg clientes queue: {q.average_clients_in_queue()}')
 	print(f'avg clientes system: {q.average_clients_in_system()}')
 	print(f'avg time in queue: {q.average_time_in_queue()}')
 	print(f'avg time in system: {q.average_time_in_system()}')
+	print()
+	print(f'frecuency of processing ocupation == 0: {q.frec_ocupated_proccesor(0)}')
+	print(f'avg processing ocupation: {q.average_processing_ocupation()}')
 
-	return 0
+	q.plot_N_dist()
+	
+
 
 main()
