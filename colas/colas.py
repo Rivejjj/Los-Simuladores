@@ -138,16 +138,17 @@ class QueueSimulator:
 		plt.show()
 
 def main():
-	q = QueueSimulator(1000/60, 10/60, float('inf'))
+	q = QueueSimulator(1, 0.01, float('inf'))
 	print('alexa, play "musica de ascensor, 10 horas"')
-	q.run(1e4, 1e5)
+	q.run(1e5, 1e5)
 	print(f'rejected ratio: {q.rejected_ratio()}')
 	print(f'avg clientes queue: {q.average_clients_in_queue()}')
 	print(f'avg clientes system: {q.average_clients_in_system()}')
 	print(f'avg time in queue: {q.average_time_in_queue()}')
 	print(f'avg time in system: {q.average_time_in_system()}')
 	print()
-	print(f'frecuency of processing ocupation == 0: {q.frec_ocupated_proccesor(0)}')
+	i = 0
+	print(f'frecuency of processing ocupation == {i}: {q.frec_ocupated_proccesor(i)}')
 	print(f'avg processing ocupation: {q.average_processing_ocupation()}')
 
 	q.plot_N_dist()
