@@ -109,8 +109,6 @@ class QueueSimulator:
 	def rejected_ratio(self):
 		return self.rejected_clients/ (self.accepted_clients + self.rejected_clients)
 
-
-	
 	def frec_ocupated_proccesor(self, x):
 		aux = 0
 		for p in self.processing_clients_samples:
@@ -121,17 +119,17 @@ class QueueSimulator:
 		#vect = [cantidad == x for cantidad in self.processing_clients_samples]
 		#return sum(vect)/len(vect)	
 
-	def samples_in_system(self):
-		return np.array(self.processing_clients_samples) + np.array(self.clients_in_queue_samples)
-
 	def plot_N_dist(self):
-		samples_in_system = self.samples_in_system()
-		frequencies = [0 for i in range(self.ammount_processors + self.queue_length + 1)]
-		for i in samples_in_system:
-			frequencies[i] += 1
+		dic = {}
+		for i in range(len(self.clients_in_queue_samples)):
+			used_proccesors = self.clients_in_queue_samples[i] + self.processing_clients_samples[i]
+			dic[used_proccesors] = dic.get(used_proccesors, 0) + 1
 		
-		frequencies = [frecuency / len(samples_in_system) for frecuency in frequencies]
-		plt.bar(range(len(frequencies)), frequencies)
+		printeo = {}
+		for i in dic.items():
+			printeo[i[0]] = i[1]/len(self.clients_in_queue_samples)
+
+		plt.bar(printeo.keys(), printeo.values())
 
 		# Configurar etiquetas y título
 		plt.xlabel('Elementos')
@@ -140,9 +138,9 @@ class QueueSimulator:
 		plt.show()
 
 def main():
-	q = QueueSimulator(1/10, 1/180, 10, 10)
+	q = QueueSimulator(1000/60, 10/60, float('inf'))
 	print('alexa, play "musica de ascensor, 10 horas"')
-	q.run(1e5, 1e6)
+	q.run(1e4, 1e5)
 	print(f'rejected ratio: {q.rejected_ratio()}')
 	print(f'avg clientes queue: {q.average_clients_in_queue()}')
 	print(f'avg clientes system: {q.average_clients_in_system()}')
